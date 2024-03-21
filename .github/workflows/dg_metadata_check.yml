@@ -1,0 +1,63 @@
+name: Check Driver Generator Metadata
+
+on:
+  workflow_call:
+    inputs:
+      run-environment:
+        description: OS to run metadata check on
+        type: string
+        default: "ubuntu-22.04"
+
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+    runs-on: ${{ inputs.run-environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check metadata exitst
+        run: |
+          if ! [ -f "metadata.yml" ]; then
+              echo "metadata.yml file not found"
+              exit 1
+          fi
+      - name: Get driver generator status from metadata
+        id: dg_status
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq ".dg_status.[]" ./metadata.yml
+      - name: Get is manually modified from metadata
+        id: is_manually_modified
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq ".is_manually_modified" ./metadata.yml
+      - name: Get last generation time from metadata
+        id: last_generated
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq ".last_generated" ./metadata.yml
+      - name: Check metadata is valid
+        shell: bash
+        run: |
+          # check that dg_status is 'released'
+          if [ "${{ steps.dg_status.outputs.result }}" != "released" ]; then
+              echo "dg_status in metadata.yml has to be 'released', not '${{ steps.dg_status.outputs.result }}'"
+              exit 1
+          fi
+          # check that last_generated is not older than timestamp of last non-merge commit (+ 3 minutes)
+          if [ ${{ steps.is_manually_modified.outputs.result }} = false ]; then
+              export LAST_GENERATED_TS="${{ steps.last_generated.outputs.result }}"
+              export LAST_GENERATED_TS_EPOCH=$(date -d "$LAST_GENERATED_TS" +%s)
+              export LAST_NON_MERGE_COMMIT_TS=$(git log --format=%ad --date=iso-strict --no-merges -1)
+              export COMMIT_TS_EPOCH=$(date -d "$LAST_NON_MERGE_COMMIT_TS" +%s)
+              if [ $(($LAST_GENERATED_TS_EPOCH + 180)) -lt $COMMIT_TS_EPOCH  ]; then
+              echo "'last_generated' timestamp in metadata.yml is older than commit timestamp ($LAST_GENERATED_TS vs $LAST_NON_MERGE_COMMIT_TS)"
+              exit 1
+              fi
+          fi
+          # check that 'is_manually_modified' is set to true if commit is not from driver generator
+          export LAST_NON_MERGE_COMMIT_AUTHOR=$(git log --format=%an --no-merges -1)
+          if ! [ "$LAST_NON_MERGE_COMMIT_AUTHOR" = "Driver Generator 2" ] && [ "$IS_MANUALLY_MODIFIED" = false ]; then
+              echo "Last commit is not from Driver Generator. Please update 'is_manually_modified' in metadata.yml"
+              exit 1
+          fi
