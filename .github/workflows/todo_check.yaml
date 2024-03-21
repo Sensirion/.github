@@ -1,0 +1,21 @@
+name: Check for TODO in code
+
+on:
+  workflow_call:
+    inputs:
+      run-environment:
+        description: OS to run TODO check on
+        type: string
+        default: "ubuntu-22.04"
+
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+    runs-on: ${{ inputs.run-environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check TODO
+        shell: bash
+        run: |
+          ! grep -rnw --exclude=.gitlab-ci.yml --exclude-dir=.git --exclude-dir=.github . -e "TODO"
