@@ -1,0 +1,44 @@
+name: Arduino Quality Check
+
+on:
+  workflow_call:
+    inputs:
+      expect-arduino-examples:
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  arduino-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/arduino-lint-action@v1
+
+  arduino-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Arduino-CI/action@stable-1.x
+        env:
+          EXPECT_EXAMPLES: ${{ inputs.expect-arduino-examples }}
+
+  clang_format_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: RafikFarhad/clang-format-github-action@v4
+        with:
+          sources: "src/**/*.h,src/**/*.c,examples/**/*.c,examples/**/*.c,examples/**/*.ino"
+          style: file
+
+  cppcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: cppcheck
+          version: 1.0
+      - name: cppcheck
+        run: cppcheck --std=c++11 --language=c++ --error-exitcode=1 --enable=warning,style,performance,portability --suppress=unreadVariable src/*
