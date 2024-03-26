@@ -7,6 +7,10 @@ on:
         description: OS to run TODO check on
         type: string
         default: "ubuntu-22.04"
+      additional-parameters:
+        description: additional parameters to grep, e.g. you can add additional files/folder to be excluded
+        type: string
+        default: ""
 
 jobs:
   validate:
@@ -18,4 +22,4 @@ jobs:
       - name: Check TODO
         shell: bash
         run: |
-          ! grep -rnw --exclude=.gitlab-ci.yml --exclude-dir=.git --exclude-dir=.github . -e "TODO"
+          ! grep -rnw --exclude=.gitlab-ci.yml --exclude-dir=.git --exclude-dir=.github ${{ inputs.additional-parameters }} . -e "TODO"
