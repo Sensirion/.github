@@ -1,4 +1,4 @@
-name: PlatformIO Check
+name: PlatformIO Check for UPT module
 
 on:
   workflow_call:
