@@ -1,0 +1,21 @@
+name: Arduino Library Check for UPT module
+
+on:
+  workflow_call:
+    inputs:
+      expect-arduino-examples:
+        required: false
+        type: boolean
+        default: true
+      lint-lib-manager-check:
+        description: Configuration of the checks for publication on the 'Arduino Library Manager'. Options are "false", "submit", and "update".
+        required: false
+        type: string
+        default: "false"
+
+jobs:
+  arduino-check:
+    uses: sensirion/.github/.github/workflows/shared.arduino.check.yml@main
+    with:
+      expect-arduino-examples: ${{ inputs.expect-arduino-examples }}
+      lint-lib-manager-check: ${{ inputs.lint-lib-manager-check }}

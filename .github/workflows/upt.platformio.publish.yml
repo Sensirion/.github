@@ -1,4 +1,4 @@
-name: PlatformIO Publish
+name: PlatformIO Publish for UPT module
 
 on:
   workflow_call:
