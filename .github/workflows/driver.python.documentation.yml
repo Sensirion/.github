@@ -7,6 +7,10 @@ on:
         description: OS to run TODO check on
         type: string
         default: "ubuntu-22.04"
+      build-python-version:
+        description: Python version used for docs build
+        type: string
+        default: 3.11
 
 jobs:
   build_pages:
@@ -15,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: ${{ inputs.build-python-version }}
           cache: "pip"
       - name: Install the project dependencies
         run: |
