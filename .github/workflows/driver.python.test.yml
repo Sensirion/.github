@@ -11,6 +11,10 @@ on:
         description: Python versions to test
         type: string
         default: '["3.8", "3.9", "3.10", "3.11"]'
+      hw-test-flag:
+        description: Name of flag used to mark tests dependent on HW
+        type: string
+        default: needs_hardware
       
 
 jobs:
@@ -42,7 +46,7 @@ jobs:
           flake8 --exclude .venv
       - name: Test with pytest
         run: |
-          pytest -m "not needs_hardware" --cov-report term --junitxml=test-report.xml
+          pytest -m "not ${{ inputs.hw-test-flag }}" --cov-report term --junitxml=test-report.xml
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v4
         if: success() || failure() # always run even if the previous step fails
