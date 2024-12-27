@@ -15,6 +15,10 @@ jobs:
     runs-on: ${{ inputs.run-environment }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # checkout last real commit, not the generated pull request commit
+          # variable is empty in case it runs on push, thus normal branch checkout will happen
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Check metadata exitst
         run: |
           if ! [ -f "metadata.yml" ]; then
