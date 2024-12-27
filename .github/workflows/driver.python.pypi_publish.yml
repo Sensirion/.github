@@ -87,8 +87,6 @@ jobs:
         # Upload release artifacts before the signing, such that artifacts are still uploaded if signing fails
         run: |
           gh release upload '${{ github.ref_name }}' dist/** --repo '${{ github.repository }}'
-          echo '${{ github.ref }}'
-          echo '${{ github.event_name }}'
       - name: Sign the dists with Sigstore
         uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46
         with:
