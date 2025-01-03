@@ -11,10 +11,10 @@ on:
         description: Python version used for docs build
         type: string
         default: 3.11
-      docs-dir:
+      workdir:
         description: directory where the python docs are
         type: string
-        default: "./docs"
+        default: "."
 
 jobs:
   build_pages:
@@ -27,14 +27,15 @@ jobs:
           cache: "pip"
       - name: Install the project dependencies
         run: |
+          cd ${{inputs.workdir}}
           python setup.py install
-          python -m pip install -r ${{ inputs.docs-dir }}/requirements.txt
+          python -m pip install -r docs/requirements.txt
       - name: Build documentation
-        run: cd ${{ inputs.docs-dir }} && make html
+        run: cd ${{inputs.workdir}}/docs && make html
       - name: Upload html
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ${{ inputs.docs-dir }}/_build/html
+          path: ${{ inputs.workdir }} / docs /_build/html
   deploy_pages:
     runs-on: ${{ inputs.run-environment }}
     needs: build_pages
