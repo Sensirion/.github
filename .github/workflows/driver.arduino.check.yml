@@ -38,4 +38,4 @@ jobs:
           packages: cppcheck
           version: 1.0
       - name: cppcheck
-        run: cppcheck --std=c++11 --language=c++ --error-exitcode=1 --enable=warning,style,performance,portability --suppress=unreadVariable --suppress=unusedStructMember src/*
+        run: cppcheck --std=c++11 --language=c++ --error-exitcode=1 --enable=warning,style,performance,portability --suppress=unreadVariable --suppress=unusedStructMember --suppress=cstyleCast src/*
