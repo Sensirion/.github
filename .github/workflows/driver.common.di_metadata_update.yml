@@ -1,0 +1,79 @@
+name: Update metadata in Driver Index
+
+on:
+  workflow_call:
+
+jobs:
+    update-metadata-in-driver-index:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Login
+          run: |
+            echo "DI_KNOX_TOKEN=$(curl --request POST \
+              --url "${{ vars.DI_BASE_URL}}/auth/login/" \
+              -H "Authorization: Basic ${{ secrets.DI_BASIC_AUTH_TOKEN }}" | jq '.token' -r)" >> $GITHUB_ENV
+        - name: Get ID of driver entry in DI
+          env:
+            REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          run: |
+            DI_DRIVER_ID=$(curl --url "${{ vars.DI_BASE_URL }}/drivers/" \
+              -H "Authorization: Token $DI_KNOX_TOKEN" \
+              | jq '.[] | select(.repository_link == "$REPO_URL") | .id')
+
+            if [[ $DI_DRIVER_ID == '' ]]; then
+              echo "::error::Driver not found" && exit 1
+            else
+              echo "Driver found with ID $DI_DRIVER_ID"
+              echo "DI_DRIVER_ID=$DI_DRIVER_ID" >> $GITHUB_ENV
+            fi
+        - name: Checkout metadata file
+          uses: actions/checkout@v4
+          with:
+            sparse-checkout: metadata.yml
+            sparse-checkout-cone-mode: false
+        - name: Parse metadata.yml
+          run: |
+            if [ -f metadata.yml ]; then
+              echo "METADATA_JSON=$(yq -o=json -I=0 '.dg_status = .dg_status[0] // .dg_status | .' metadata.yml)" >> $GITHUB_ENV
+            else
+              echo "::error::metadata.yml file does not exist" && exit 1
+            fi
+        - name: Get metadata id from driver
+          run: |
+            echo "DI_METADATA_ID=$(curl --url "${{ vars.DI_BASE_URL }}/drivers/$DI_DRIVER_ID/" \
+              -H "Authorization: Token $DI_KNOX_TOKEN" \
+              | jq -r '.metadata?.url // "" | capture("/(?<id>[0-9]+)/$").id // empty')" >> $GITHUB_ENV
+        - name: Create metadata
+          if: env.DI_METADATA_ID == ''
+          run: |
+            echo "Creating metadata: $METADATA_JSON"
+            CREATED_ID=$(jq -c . <<< "$METADATA_JSON" | \
+              curl --url "${{ vars.DI_BASE_URL }}/driver_metadata/" --request POST \
+                -H "Authorization: Token $DI_KNOX_TOKEN" \
+                -H "Content-Type: application/json" \
+                --data-binary @- | jq '.id')
+            
+            if [[ $CREATED_ID == '' ]]; then
+              echo "::error::Something went wrong while creating driver metadata" && exit 1
+            fi
+
+            echo "Linking driver with ID $DI_DRIVER_ID to metadata with ID $CREATED_ID"
+
+            jq -c . <<< "{\"metadata\":$CREATED_ID}" | \
+            curl --fail --url "${{ vars.DI_BASE_URL }}/drivers/$DI_DRIVER_ID/" --request PATCH \
+              -H "Authorization: Token $DI_KNOX_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data-binary @-
+        - name: Update metadata
+          if: env.DI_METADATA_ID != ''
+          run: |
+            echo "Updating metadata: $METADATA_JSON"
+            jq -c . <<< "$METADATA_JSON" | \
+              curl --fail --url "${{ vars.DI_BASE_URL }}/driver_metadata/$DI_METADATA_ID/" --request PATCH \
+                -H "Authorization: Token $DI_KNOX_TOKEN" \
+                -H "Content-Type: application/json" \
+                --data-binary @-
+        - name: Logout
+          if: always()
+          run: |
+            curl --request POST --url "${{ vars.DI_BASE_URL }}/auth/logout/" -H "Authorization: Token $DI_KNOX_TOKEN"
