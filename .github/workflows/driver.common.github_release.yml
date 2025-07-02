@@ -57,7 +57,7 @@ jobs:
           env:
             GH_TOKEN: ${{ github.token }}
           run: |
-            gh release view --json tagName,publishedAt,zipballUrl \
+            gh release view --repo "${GITHUB_REPOSITORY}" --json tagName,publishedAt,zipballUrl \
               | jq -c --arg driver "$DI_DRIVER_ID" '{release_date: .publishedAt, version: .tagName, download_link: .zipballUrl, driver: $driver}' \
               | curl --fail --url "${{ vars.DI_BASE_URL }}/driver_releases/" --request POST \
                 -H "Authorization: Token $DI_KNOX_TOKEN" \
