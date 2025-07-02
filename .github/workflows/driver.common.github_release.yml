@@ -36,16 +36,16 @@ jobs:
       steps:
         - name: Driver Index login
           run: |
-            echo "DI_KNOX_TOKEN=$(curl --request POST \
-              --url "${{ vars.DI_BASE_URL}}/auth/login/" \
+            echo "DI_KNOX_TOKEN=$(curl -s --request POST \
+              --url "${{ vars.DI_BASE_URL }}/auth/login/" \
               -H "Authorization: Basic ${{ secrets.DI_BASIC_AUTH_TOKEN }}" | jq '.token' -r)" >> $GITHUB_ENV
         - name: Get ID of driver entry in DI
           env:
             REPO_URL: ${{ github.server_url }}/${{ github.repository }}
           run: |
-            DI_DRIVER_ID=$(curl --url "${{ vars.DI_BASE_URL }}/drivers/" \
+            DI_DRIVER_ID=$(curl -s --url "${{ vars.DI_BASE_URL }}/drivers/" \
               -H "Authorization: Token $DI_KNOX_TOKEN" \
-              | jq '.[] | select(.repository_link == "$REPO_URL") | .id')
+              | jq ".[] | select(.repository_link == \"$REPO_URL\") | .id")
 
             if [[ $DI_DRIVER_ID == '' ]]; then
               echo "::error::Driver not found" && exit 1
