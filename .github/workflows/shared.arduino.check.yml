@@ -15,10 +15,15 @@ on:
         required: false
         type: string
         default: "false"
+      platforms:
+        description: names of libraries to build as yaml list
+        required: false
+        type: string
+        default: "[\"esp32:esp32\"]"
 
 jobs:
   arduino-lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: arduino/arduino-lint-action@v1
@@ -26,9 +31,16 @@ jobs:
           library-manager: ${{ inputs.lint-lib-manager-check }}
 
   arduino-ci:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platforms: ${{fromJSON(inputs.platforms)}}
     steps:
       - uses: actions/checkout@v4
-      - uses: Arduino-CI/action@stable-1.x
+      - uses: arduino/compile-sketches@v1
+        with: 
+          platforms: ${{ matrix.platforms }}
+          sketch-paths: |
+            - ./examples
         env:
           EXPECT_EXAMPLES: ${{ inputs.expect-arduino-examples }}
