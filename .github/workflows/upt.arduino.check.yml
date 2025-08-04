@@ -15,7 +15,7 @@ on:
 
 jobs:
   arduino-check:
-    uses: sensirion/.github/.github/workflows/shared.arduino.check.yml@main
+    uses: sensirion/.github/.github/workflows/shared.arduino.check.yml@freeze-ubuntu
     with:
       expect-arduino-examples: ${{ inputs.expect-arduino-examples }}
       lint-lib-manager-check: ${{ inputs.lint-lib-manager-check }}
