@@ -12,6 +12,16 @@ on:
         required: false
         type: string
         default: "false"
+      fqbn-list:
+        description: The list of boards to check compilation against (as JSON string)
+        required: false
+        type: string
+        default: "['esp32:esp32:esp32', 'esp32:esp32:esp32c6']"
+      dependency-list:
+        description: The list of dependencies to use(as JSON string). If nothing is given the dependecies from library.properties is used BUT versions are ignored.
+        required: false
+        type: string
+        default: "auto"
 
 jobs:
   arduino-check:
@@ -19,3 +29,5 @@ jobs:
     with:
       expect-arduino-examples: ${{ inputs.expect-arduino-examples }}
       lint-lib-manager-check: ${{ inputs.lint-lib-manager-check }}
+      fqbn-list: ${{ inputs.fqbn-list }}
+      dependency-list: ${{ inputs.dependency-list }}

@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: "false"
+      dependency-list:
+        description: The list of dependencies to use(as JSON string). If nothing is given the dependecies from library.properties is used BUT versions are ignored.
+        required: false
+        type: string
+        default: "auto"
 
 jobs:
   arduino-check:
@@ -19,6 +24,8 @@ jobs:
     with:
       expect-arduino-examples: ${{ inputs.expect-arduino-examples }}
       lint-lib-manager-check: ${{ inputs.lint-lib-manager-check }}
+      fqbn-list: "['arduino:avr:uno','arduino:avr:nano','arduino:avr:mega','esp32:esp32:esp32']"
+      dependency-list: ${{ inputs.dependency-list }}
 
   clang_format_check:
     runs-on: ubuntu-latest

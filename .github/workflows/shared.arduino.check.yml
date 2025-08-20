@@ -6,29 +6,84 @@ on:
   workflow_call:
     inputs:
       expect-arduino-examples:
-        description: Should examples be expected ?
+        description: Should examples be expected ? If no examples are present example compilation is skipped.
         required: false
         type: boolean
         default: true
+      fqbn-list:
+        description: The list of boards to check compilation against (as JSON string)
+        required: true
+        type: string
+      dependency-list:
+        description: The list of dependencies to use (as JSON string). If nothing is given the dependecies from library.properties is used BUT versions are ignored.
+        required: false
+        type: string
+        default: "auto"
       lint-lib-manager-check:
         description: Configuration of the checks for publication on the 'Arduino Library Manager'. Options are "false", "submit", and "update".
         required: false
         type: string
         default: "false"
+      lint-compliance-level:
+        description: Configure how strict the tool is about which checks are considered errors vs warnings if they don't pass. Options are "strict", "specification", and "permissive".
+        required: false
+        type: string
+        default: "specification"
+      lint-project-type:
+        description: Configures which types of projects to check, along with their subprojects. Options are "sketch", "library", "platform", "package-index" and "all".
+        required: false
+        type: string
+        default: "all"
 
 jobs:
   arduino-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: arduino/arduino-lint-action@v1
+      - uses: arduino/arduino-lint-action@v2
         with:
           library-manager: ${{ inputs.lint-lib-manager-check }}
-
-  arduino-ci:
+          compliance: ${{ inputs.lint-compliance-level }}
+          project-type: ${{ inputs.lint-project-type }}
+  
+  parse-dependecies:
     runs-on: ubuntu-latest
+    outputs:
+      dependencies: ${{ steps.parsedependencies.outputs.deps || inputs.dependency-list }}
     steps:
       - uses: actions/checkout@v4
-      - uses: Arduino-CI/action@stable-1.x
-        env:
-          EXPECT_EXAMPLES: ${{ inputs.expect-arduino-examples }}
+      - name: Read dependencies from library.properties file
+        if: inputs.dependency-list == 'auto'
+        shell: python
+        id: parsedependencies
+        run: |
+          import json
+          import os
+          with open("library.properties") as f:
+              for line in f:
+                  if line.startswith("depends="):
+                      libs = line.replace("\n","").replace("depends=","").split(",")
+                      break
+          print("Original dependencies:", libs)
+          tmp_list = [l.split('(') for l in libs if l != ""]   
+          libs = [{'name':l[0].strip()} for l in tmp_list]
+          print("Dependencies used (IGNORING VERSIONS !):", libs)
+          libs += [{'source-path': './'}]
+          print("Also added current: {'source-path': './'}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as o:
+              dump = json.dumps(libs)
+              o.write("deps=" + dump)
+
+  arduino-compile-sketches:
+    if: ${{ inputs.expect-arduino-examples }}
+    needs: [parse-dependecies]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fqbn: ${{ fromJson(inputs.fqbn-list) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/compile-sketches@v1
+        with:
+          libraries: ${{ needs.parse-dependecies.outputs.dependencies}}
+          fqbn: ${{ matrix.fqbn }}
