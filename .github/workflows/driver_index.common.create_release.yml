@@ -16,14 +16,14 @@ jobs:
       - name: Driver Index login
         run: |
           echo "DI_KNOX_TOKEN=$(curl -s --request POST \
-            --url \"${{ inputs.DI_BASE_URL }}/auth/login/\" \
-            -H \"Authorization: Basic ${{ secrets.DI_BASIC_AUTH_TOKEN }}\" | jq '.token' -r)" >> $GITHUB_ENV
+            --url "${{ inputs.DI_BASE_URL }}/auth/login/" \
+            -H "Authorization: Basic ${{ secrets.DI_BASIC_AUTH_TOKEN }}" | jq '.token' -r)" >> $GITHUB_ENV
       - name: Get ID of driver entry in DI
         env:
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
-          DI_DRIVER_ID=$(curl -s --url \"${{ inputs.DI_BASE_URL }}/drivers/\" \
-            -H \"Authorization: Token $DI_KNOX_TOKEN\" \
+          DI_DRIVER_ID=$(curl -s --url "${{ inputs.DI_BASE_URL }}/drivers/" \
+            -H "Authorization: Token $DI_KNOX_TOKEN" \
             | jq ".[] | select(.repository_link == \"$REPO_URL\") | .id")
 
           if [[ $DI_DRIVER_ID == '' ]]; then
