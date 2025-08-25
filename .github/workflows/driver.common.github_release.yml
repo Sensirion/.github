@@ -31,39 +31,9 @@ jobs:
           '${{ github.ref_name }}' metadata.yml
           --repo '${{ github.repository }}'
   create-driver-index-release:
-      runs-on: ubuntu-latest
-      needs: create-github-release
-      steps:
-        - name: Driver Index login
-          run: |
-            echo "DI_KNOX_TOKEN=$(curl -s --request POST \
-              --url "${{ vars.DI_BASE_URL }}/auth/login/" \
-              -H "Authorization: Basic ${{ secrets.DI_BASIC_AUTH_TOKEN }}" | jq '.token' -r)" >> $GITHUB_ENV
-        - name: Get ID of driver entry in DI
-          env:
-            REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-          run: |
-            DI_DRIVER_ID=$(curl -s --url "${{ vars.DI_BASE_URL }}/drivers/" \
-              -H "Authorization: Token $DI_KNOX_TOKEN" \
-              | jq ".[] | select(.repository_link == \"$REPO_URL\") | .id")
-
-            if [[ $DI_DRIVER_ID == '' ]]; then
-              echo "::error::Driver not found" && exit 1
-            else
-              echo "Driver found with ID $DI_DRIVER_ID"
-              echo "DI_DRIVER_ID=$DI_DRIVER_ID" >> $GITHUB_ENV
-            fi
-        - name: Add release to Driver Index
-          env:
-            GH_TOKEN: ${{ github.token }}
-          run: |
-            gh release view --repo "${GITHUB_REPOSITORY}" --json tagName,publishedAt,zipballUrl \
-              | jq -c --arg driver "$DI_DRIVER_ID" '{release_date: .publishedAt, version: .tagName, download_link: .zipballUrl, driver: $driver}' \
-              | curl --fail --url "${{ vars.DI_BASE_URL }}/driver_releases/" --request POST \
-                -H "Authorization: Token $DI_KNOX_TOKEN" \
-                -H "Content-Type: application/json" \
-                --data-binary @-
-        - name: Driver Index logout
-          if: always()
-          run: |
-            curl --request POST --url "${{ vars.DI_BASE_URL }}/auth/logout/" -H "Authorization: Token $DI_KNOX_TOKEN"
+    needs: create-github-release
+    uses: sensirion/.github/.github/workflows/driver_index.common.create_release.yml
+    secrets:
+      DI_BASIC_AUTH_TOKEN: ${{ secrets.DI_BASIC_AUTH_TOKEN }}
+    with:
+      DI_BASE_URL: ${{ vars.DI_BASE_URL }}

@@ -19,6 +19,7 @@ jobs:
           # checkout last real commit, not the generated pull request commit
           # variable is empty in case it runs on push, thus normal branch checkout will happen
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0 # fetch all history for accurate git log
       - name: Check metadata exitst
         run: |
           if ! [ -f "metadata.yml" ]; then

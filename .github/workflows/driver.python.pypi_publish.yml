@@ -99,3 +99,10 @@ jobs:
         # upload sigstore-produced signatures and certificates from dist
         run: |
           gh release upload '${{ github.ref_name }}' dist/*.sigstore.json --repo '${{ github.repository }}'
+  create-driver-index-release:
+    needs: github-release
+    uses: sensirion/.github/.github/workflows/driver_index.common.create_release.yml
+    secrets:
+      DI_BASIC_AUTH_TOKEN: ${{ secrets.DI_BASIC_AUTH_TOKEN }}
+    with:
+      DI_BASE_URL: ${{ vars.DI_BASE_URL }}
