@@ -101,7 +101,7 @@ jobs:
           gh release upload '${{ github.ref_name }}' dist/*.sigstore.json --repo '${{ github.repository }}'
   create-driver-index-release:
     needs: github-release
-    uses: sensirion/.github/.github/workflows/driver_index.common.create_release.yml
+    uses: sensirion/.github/.github/workflows/driver_index.common.create_release.yml@main
     secrets:
       DI_BASIC_AUTH_TOKEN: ${{ secrets.DI_BASIC_AUTH_TOKEN }}
     with:
