@@ -1,0 +1,53 @@
+name: Arduino (UART) Quality Check
+
+on:
+  workflow_call:
+    inputs:
+      expect-arduino-examples:
+        required: false
+        type: boolean
+        default: true
+      lint-lib-manager-check:
+        description: Configuration of the checks for publication on the 'Arduino Library Manager'. Options are "false", "submit", and "update".
+        required: false
+        type: string
+        default: "false"
+      dependency-list:
+        description: The list of dependencies to use(as JSON string). If nothing is given the dependecies from library.properties is used BUT versions are ignored.
+        required: false
+        type: string
+        default: "auto"
+      fqbn-list:
+        description: The list of boards to check compilation against (as JSON string)
+        required: false
+        type: string
+        default: "['arduino:avr:mega','esp32:esp32:esp32']"
+
+jobs:
+  arduino-check:
+    uses: sensirion/.github/.github/workflows/shared.arduino.check.yml@main
+    with:
+      expect-arduino-examples: ${{ inputs.expect-arduino-examples }}
+      lint-lib-manager-check: ${{ inputs.lint-lib-manager-check }}
+      fqbn-list: ${{ inputs.fqbn-list }}
+      dependency-list: ${{ inputs.dependency-list }}
+
+  clang_format_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: RafikFarhad/clang-format-github-action@v4
+        with:
+          sources: "src/**/*.h,src/**/*.c,examples/**/*.c,examples/**/*.c,examples/**/*.ino"
+          style: file
+
+  cppcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: cppcheck
+          version: 1.0
+      - name: cppcheck
+        run: cppcheck --std=c++11 --language=c++ --error-exitcode=1 --enable=warning,style,performance,portability --suppress=unreadVariable --suppress=unusedStructMember --suppress=cstyleCast src/*
