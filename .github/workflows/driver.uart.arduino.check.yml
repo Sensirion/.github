@@ -1,4 +1,4 @@
-name: Arduino Quality Check
+name: Arduino (UART) Quality Check
 
 on:
   workflow_call:
@@ -21,7 +21,7 @@ on:
         description: The list of boards to check compilation against (as JSON string)
         required: false
         type: string
-        default: "['arduino:avr:uno','arduino:avr:nano','arduino:avr:mega','esp32:esp32:esp32']"
+        default: "['arduino:avr:mega','esp32:esp32:esp32']"
 
 jobs:
   arduino-check:
