@@ -17,6 +17,11 @@ on:
         required: false
         type: string
         default: "auto"
+      fqbn-list:
+        description: The list of boards to check compilation against (as JSON string)
+        required: false
+        type: string
+        default: "['arduino:avr:uno','arduino:avr:nano','arduino:avr:mega','esp32:esp32:esp32']"
 
 jobs:
   arduino-check:
@@ -24,7 +29,7 @@ jobs:
     with:
       expect-arduino-examples: ${{ inputs.expect-arduino-examples }}
       lint-lib-manager-check: ${{ inputs.lint-lib-manager-check }}
-      fqbn-list: "['arduino:avr:uno','arduino:avr:nano','arduino:avr:mega','esp32:esp32:esp32']"
+      fqbn-list: ${{ inputs.fqbn-list }}
       dependency-list: ${{ inputs.dependency-list }}
 
   clang_format_check:
