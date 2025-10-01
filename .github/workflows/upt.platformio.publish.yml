@@ -1,4 +1,4 @@
-name: PlatformIO Publish for UPT module
+name: PlatformIO Package and Publish for UPT module
 
 on:
   workflow_call:
@@ -17,7 +17,7 @@ on:
         required: false
 
 jobs:
-  platformio-publish:
+  platformio-package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,8 +54,32 @@ jobs:
           name: pio-library-archive
           path: ./*.tar.gz
           retention-days: 2
+
+  platformio-publish:
+    runs-on: ubuntu-latest
+    environment: PlatformIO Registry
+    needs: platformio-package
+    if: ${{ inputs.should-publish }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+      - name: Download package artifact
+        uses: actions/download-artifact@v4
+        with:
+            name: pio-library-archive
+            path: ./.
       - name: Run 'pio pkg publish'
-        if: ${{ inputs.should-publish }}
+        
         run: pio pkg publish --owner ${{ inputs.pkg-owner }} --no-interactive ./*.tar.gz
         env:
           PLATFORMIO_AUTH_TOKEN: ${{ secrets.pio-registry-token }}
