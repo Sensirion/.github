@@ -6,6 +6,8 @@ on:
       PYPI_API_TOKEN:
         required: true
 
-jobs:  
-  build:
+jobs:
+  build_and_publish:
     uses: sensirion/.github/.github/workflows/shared.python.pypi_publish.yml@main
+    with: 
+      use-driver-index: false
