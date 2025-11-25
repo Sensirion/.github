@@ -2,12 +2,10 @@ name: Build python package, create github release and publish to pypi
 
 on:
   workflow_call:
-    secrets:
-      PYPI_API_TOKEN:
-        required: true
 
 jobs:
   build_and_publish:
     uses: sensirion/.github/.github/workflows/shared.python.pypi_publish.yml@main
-    with: 
+    with:
       use-driver-index: false
+    secrets: inherit
