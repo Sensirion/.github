@@ -23,7 +23,8 @@ jobs:
           cache: "pip"
       - name: Install the project dependencies
         run: |
-          python setup.py install
+          pip install build
+          python -m build . --sdist  # we do not need the wheel and the wheel might not work depending on the version of setuptools!
           python -m pip install -r docs/requirements.txt
       - name: Build documentation
         run: cd docs && make html
