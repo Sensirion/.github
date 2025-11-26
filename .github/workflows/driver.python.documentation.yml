@@ -11,6 +11,10 @@ on:
         description: Python version used for docs build
         type: string
         default: 3.11
+      use-project-requirements:
+        description: New python packages will contain the requirements for building the documentation in the [docs] section of project dependencies
+        type: boolean
+        default: false
 
 jobs:
   build_pages:
@@ -21,11 +25,16 @@ jobs:
         with:
           python-version: ${{ inputs.build-python-version }}
           cache: "pip"
-      - name: Install the project dependencies
+      - name: Install project  # projects that use a requirement file in the docs folder
+        if: ${{ inputs.use-project-requirements == false }}
         run: |
           pip install build
           python -m build . --sdist  # we do not need the wheel and the wheel might not work depending on the version of setuptools!
           python -m pip install -r docs/requirements.txt
+      - name: Install project with docs  # projects that use a docs section in the pyproject toml
+        if: ${{ inputs.use-project-requirements == true }}
+        run: |
+          pip install .[docs]
       - name: Build documentation
         run: cd docs && make html
       - name: Upload html
