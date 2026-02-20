@@ -9,8 +9,21 @@ on:
         default: ""
 
 jobs:
+  check-properties-version:
+    name: Check library properties version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          PROP_VERSION=$(grep "version" library.properties | cut -d'=' -f2)
+          if [ "${{ github.ref_name }}" != "$PROP_VERSION" ]; then
+            echo "::error::Version mismatch! library.properties version $PROP_VERSION does not match tag ${{ github.ref_name }}"
+            exit 1
+          fi
+
   create-github-release:
     runs-on: ubuntu-latest
+    needs: check-properties-version
     permissions:
       contents: write
     steps:
