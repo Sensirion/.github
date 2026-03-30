@@ -67,6 +67,9 @@ jobs:
 
   create-driver-index-release:
     needs: create-github-release
+    if: |
+      !cancelled() &&
+      needs.create-github-release.result == 'success'
     uses: sensirion/.github/.github/workflows/driver_index.common.create_release.yml@main
     secrets:
       DI_BASIC_AUTH_TOKEN: ${{ secrets.DI_BASIC_AUTH_TOKEN }}
