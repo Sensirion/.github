@@ -35,8 +35,8 @@ jobs:
   clang_format_check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: RafikFarhad/clang-format-github-action@v4
+      - uses: actions/checkout@v6
+      - uses: RafikFarhad/clang-format-github-action@v6
         with:
           sources: "src/**/*.h,src/**/*.c,examples/**/*.c,examples/**/*.c,examples/**/*.ino"
           style: file
@@ -44,7 +44,7 @@ jobs:
   cppcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: cppcheck

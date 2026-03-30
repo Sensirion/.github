@@ -16,7 +16,7 @@ jobs:
   code-analysis:
     runs-on: ${{ inputs.run-environment }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: cppcheck clang-format
@@ -33,7 +33,7 @@ jobs:
       matrix:
         example-folder: ${{ fromJSON(inputs.examples) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: runbuild
         run: cd ${{ matrix.example-folder }} && make
       

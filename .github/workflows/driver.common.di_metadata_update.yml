@@ -39,7 +39,7 @@ jobs:
               echo "DI_DRIVER_ID=$DI_DRIVER_ID" >> $GITHUB_ENV
             fi
         - name: Checkout metadata file
-          uses: actions/checkout@v4
+          uses: actions/checkout@v6
           with:
             sparse-checkout: metadata.yml
             sparse-checkout-cone-mode: false
