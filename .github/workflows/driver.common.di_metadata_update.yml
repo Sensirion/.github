@@ -16,11 +16,23 @@ jobs:
           env:
             REPO_URL: ${{ github.server_url }}/${{ github.repository }}
           run: |
-            DI_DRIVER_ID=$(curl -s --url "${{ vars.DI_BASE_URL }}/drivers/" \
-              -H "Authorization: Token $DI_KNOX_TOKEN" \
-              | jq ".[] | select(.repository_link == \"$REPO_URL\") | .id")
+            NEXT_URL="${{ vars.DI_BASE_URL }}/drivers/"
+            DI_DRIVER_ID=""
+            while [[ -n "$NEXT_URL" && "$NEXT_URL" != "null" ]]; do
+              RESPONSE=$(curl -s --url "$NEXT_URL" -H "Authorization: Token $DI_KNOX_TOKEN")
+              if echo "$RESPONSE" | jq -e 'has("results")' > /dev/null 2>&1; then
+                DI_DRIVER_ID=$(echo "$RESPONSE" | jq -r ".results[] | select(.repository_link == \"$REPO_URL\") | .id" | head -n 1)
+                NEXT_URL=$(echo "$RESPONSE" | jq -r '.next')
+              else
+                DI_DRIVER_ID=$(echo "$RESPONSE" | jq -r ".[] | select(.repository_link == \"$REPO_URL\") | .id" | head -n 1)
+                NEXT_URL=""
+              fi
+              if [[ -n "$DI_DRIVER_ID" && "$DI_DRIVER_ID" != "null" ]]; then
+                break
+              fi
+            done
 
-            if [[ $DI_DRIVER_ID == '' ]]; then
+            if [[ -z "$DI_DRIVER_ID" || "$DI_DRIVER_ID" == "null" ]]; then
               echo "::error::Driver not found" && exit 1
             else
               echo "Driver found with ID $DI_DRIVER_ID"
