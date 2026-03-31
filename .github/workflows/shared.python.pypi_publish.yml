@@ -28,8 +28,8 @@ jobs:
         os: ${{ fromJSON(inputs.run-environments) }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
@@ -39,7 +39,7 @@ jobs:
       - name: Build Packages
         run: python -m build .
       - name: Store the distribution packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: python-package-distributions
           path: dist/
@@ -53,7 +53,7 @@ jobs:
       - build
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions
           path: dist/
@@ -72,9 +72,9 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions
           path: dist/
@@ -92,7 +92,7 @@ jobs:
         run: |
           gh release upload '${{ github.ref_name }}' dist/** --repo '${{ github.repository }}'
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46
+        uses: sigstore/gh-action-sigstore-python@v3
         with:
           inputs: >-
             ./dist/*.tar.gz

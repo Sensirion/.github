@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
     runs-on: ${{ inputs.run-environment }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # checkout last real commit, not the generated pull request commit
           # variable is empty in case it runs on push, thus normal branch checkout will happen
@@ -28,17 +28,17 @@ jobs:
           fi
       - name: Get driver generator status from metadata
         id: dg_status
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq ".dg_status" ./metadata.yml
       - name: Get is manually modified from metadata
         id: is_manually_modified
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq ".is_manually_modified" ./metadata.yml
       - name: Get last generation time from metadata
         id: last_generated
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq ".last_generated" ./metadata.yml
       - name: Check metadata is valid
