@@ -22,7 +22,18 @@ on:
         required: false
         type: string
         default: "auto"
-
+      sketch-paths:
+        description: YAML-format list of paths containing sketches to compile.
+        required: false
+        type: string
+        default: |-
+          - examples
+      cli-compile-flags:
+        description: YAML-format list of flags to add to the Arduino CLI sketch compilation command.
+        required: false
+        type: string
+        default: ""
+ 
 jobs:
   arduino-check:
     uses: sensirion/.github/.github/workflows/shared.arduino.check.yml@main
@@ -31,3 +42,5 @@ jobs:
       lint-lib-manager-check: ${{ inputs.lint-lib-manager-check }}
       fqbn-list: ${{ inputs.fqbn-list }}
       dependency-list: ${{ inputs.dependency-list }}
+      sketch-paths: ${{ inputs.sketch-paths }}
+      cli-compile-flags: ${{ inputs.cli-compile-flags }}

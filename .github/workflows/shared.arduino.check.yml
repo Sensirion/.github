@@ -34,7 +34,18 @@ on:
         required: false
         type: string
         default: "all"
-
+      sketch-paths:
+        description: YAML-format list of paths containing sketches to compile.
+        required: false
+        type: string
+        default: |-
+          - examples
+      cli-compile-flags:
+        description: YAML-format list of flags to add to the Arduino CLI sketch compilation command.
+        required: false
+        type: string
+        default: ""
+ 
 jobs:
   arduino-lint:
     runs-on: ubuntu-latest
@@ -87,3 +98,5 @@ jobs:
         with:
           libraries: ${{ needs.parse-dependecies.outputs.dependencies}}
           fqbn: ${{ matrix.fqbn }}
+          sketch-paths: ${{ inputs.sketch-paths }}
+          cli-compile-flags: ${{ inputs.cli-compile-flags }}
