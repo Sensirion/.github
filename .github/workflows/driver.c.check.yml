@@ -17,12 +17,14 @@ jobs:
     runs-on: ${{ inputs.run-environment }}
     steps:
       - uses: actions/checkout@v6
+      - uses: RafikFarhad/clang-format-github-action@v4.1
+        with:
+          sources: "**/*.h,**/*.c,**/*.cpp,**/*.hpp"
+          style: file
       - uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: cppcheck clang-format
+          packages: cppcheck
           version: 1.0
-      - name: clang-format syntax-check
-        run: find . -type f -iregex ".*\.\(c\|h\|cpp\|ino\)" -exec clang-format -i -style=file {} \; && git diff --exit-code
       - name: cppcheck static code analyis
         run: cppcheck --std=c89 --language=c --error-exitcode=1 --enable=warning,style,performance,portability --suppress=unreadVariable -i sample-implementations/ .
 
