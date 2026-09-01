@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ inputs.run-environment }}
     steps:
       - uses: actions/checkout@v6
-      - uses: RafikFarhad/clang-format-github-action@v4.1 # Uses clang-format 18; same as in sensor model CI
+      - uses: RafikFarhad/clang-format-github-action@v5.1 # Uses clang-format 18; same as in sensor model CI
         with:
           sources: "**/*.h,**/*.c,**/*.cpp,**/*.hpp"
           style: file
