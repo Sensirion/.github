@@ -16,7 +16,7 @@ jobs:
   code-analysis:
     runs-on: ${{ inputs.run-environment }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: RafikFarhad/clang-format-github-action@v4.1 # Uses clang-format 18; same as in sensor model CI
         with:
           sources: "**/*.h,**/*.c,**/*.cpp,**/*.hpp"
@@ -35,6 +35,6 @@ jobs:
       matrix:
         example-folder: ${{ fromJSON(inputs.examples) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: runbuild
         run: cd ${{ matrix.example-folder }} && make
