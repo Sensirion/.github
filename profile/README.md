@@ -10,4 +10,4 @@
 
 For support on the software projects hosted here, please use the issue tracking from github to submit a question or report any problems you experienced. 
 
-If you have questions on Sensirion products and their specifications, please use the [contact form](https://sensirion.com/main-contact/) on the Sensirion Website.
+If you have questions on Sensirion products and their specifications, please use the [contact form](https://sensirion.com/forms/support-contact) on the Sensirion Website.
